@@ -5,6 +5,7 @@ import InvoiceFormPage from './page';
 import InvoiceModal from './invoiceModal';
 import {generateInvoiceHtml} from './invoiceTemplate';
 import {Alert} from 'react-native';
+import usePermissions from '../../hooks/permissions';
 
 const InvoiceForm = () => {
   const [date, setDate] = useState(dayjs());
@@ -27,20 +28,28 @@ const InvoiceForm = () => {
 
     return {subTotal, total};
   };
+  const {hasStoragePermission, requestStoragePermission} = usePermissions();
 
   const generatePDF = async values => {
     const htmlContent = generateInvoiceHtml(values, date);
-
-    try {
-      const pdfOptions = {
-        html: htmlContent,
-        fileName: `invoice - ${values.billTo}`,
-        directory: 'Documents',
-      };
-      let file = await RNHTMLtoPDF.convert(pdfOptions);
-      Alert.alert('PDF generated: ', file.filePath);
-    } catch (error) {
-      Alert.alert('PDF generation error:', error);
+    if (!hasStoragePermission) {
+      try {
+        const pdfOptions = {
+          html: htmlContent,
+          fileName: `invoice - ${values.billTo}`,
+          directory: 'Documents',
+        };
+        let file = await RNHTMLtoPDF.convert(pdfOptions);
+        Alert.alert('PDF generated: ', file.filePath);
+      } catch (error) {
+        Alert.alert('PDF generation error:', error);
+      }
+    } else {
+      Alert.alert(
+        'Permission Denied',
+        'Storage permission is required to save the PDF.',
+      );
+      requestStoragePermission();
     }
   };
 
