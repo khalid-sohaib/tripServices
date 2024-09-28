@@ -7,6 +7,7 @@ const InvoiceModal = ({
   hideModal,
   invoiceValues,
   handlePrint,
+  handleShare,
 }) => {
   const containerStyle = {backgroundColor: 'white', padding: 20};
   const {date, billTo, description, quantity, unitPrice, discount, vat, other} =
@@ -77,9 +78,14 @@ const InvoiceModal = ({
                   <Text style={styles.total}>Total: ${total.toFixed(2)}</Text>
                 </View>
               </View>
-              <Button mode="contained" onPress={handlePrint}>
-                Print
-              </Button>
+              <View style={styles.buttonContainer}>
+                <Button mode="contained" onPress={handlePrint}>
+                  Save
+                </Button>
+                <Button mode="contained" onPress={handleShare}>
+                  Share
+                </Button>
+              </View>
             </ScrollView>
           </Modal>
         </Portal>
@@ -157,6 +163,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
     marginTop: 10,
+  },
+
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 10,
+    justifyContent: 'space-between',
+    padding: 10,
   },
 });
 export default InvoiceModal;
