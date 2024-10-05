@@ -10,12 +10,17 @@ const InvoiceModal = ({
   handleShare,
 }) => {
   const containerStyle = {backgroundColor: 'white', padding: 20};
-  const {date, billTo, description, quantity, unitPrice, discount, vat, other} =
+  const {date, billTo, discount, vat, other, tasks, companyName, bankAccount} =
     invoiceValues;
 
-  const subTotal = parseFloat(quantity) * parseFloat(unitPrice) || 0;
+  // Calculate totals
+  const subTotals = tasks?.map(task => ({
+    ...task,
+    subTotal: parseFloat(task.quantity) * parseFloat(task?.unitPrice) || 0,
+  }));
+
   const total =
-    subTotal -
+    subTotals?.reduce((acc, task) => acc + task?.subTotal, 0) -
     (parseFloat(discount) || 0) +
     (parseFloat(vat) || 0) +
     (parseFloat(other) || 0);
@@ -31,8 +36,12 @@ const InvoiceModal = ({
             <ScrollView>
               {/* Header Section */}
               <Text style={styles.title}>INVOICE</Text>
-              <Text style={styles.businessName}>Trip Services</Text>
-              <Text style={styles.tagline}>24/7 AT YOUR DOOR STEP</Text>
+              {companyName && (
+                <>
+                  <Text style={styles.businessName}>Trip Services</Text>
+                  <Text style={styles.tagline}>24/7 AT YOUR DOOR STEP</Text>
+                </>
+              )}
 
               {/* Invoice Info */}
               <View style={styles.invoiceInfo}>
@@ -41,10 +50,12 @@ const InvoiceModal = ({
                   <Text>Invoice No: #INV-001</Text>
                   <Text>Bill To: {billTo}</Text>
                 </View>
-                <View style={styles.contactInfo}>
-                  <Text>Phone: +447529910522</Text>
-                  <Text>Email: tripservices@hotmail.com</Text>
-                </View>
+                {companyName && (
+                  <View style={styles.contactInfo}>
+                    <Text>Phone: +447529910522</Text>
+                    <Text>Email: tripservices@hotmail.com</Text>
+                  </View>
+                )}
               </View>
 
               {/* Service Table */}
@@ -55,23 +66,31 @@ const InvoiceModal = ({
                   <Text style={styles.tableHeaderText}>Unit Price</Text>
                   <Text style={styles.tableHeaderText}>Amount</Text>
                 </View>
-                <View style={styles.tableRow}>
-                  <Text style={styles.tableCell}>{description}</Text>
-                  <Text style={styles.tableCell}>{quantity}</Text>
-                  <Text style={styles.tableCell}>{unitPrice}</Text>
-                  <Text style={styles.tableCell}>{subTotal}</Text>
-                </View>
+                {subTotals?.map((task, index) => (
+                  <View key={index} style={styles.tableRow}>
+                    <Text style={styles.tableCell}>{task.description}</Text>
+                    <Text style={styles.tableCell}>{task.quantity}</Text>
+                    <Text style={styles.tableCell}>{task.unitPrice}</Text>
+                    <Text style={styles.tableCell}>
+                      {task.subTotal.toFixed(2)}
+                    </Text>
+                  </View>
+                ))}
               </View>
 
               {/* Summary */}
               <View style={styles.summary}>
                 <View style={styles.paymentInfo}>
-                  <Text>Payment Method: Bank Transfer</Text>
-                  <Text>Account No: 12345678</Text>
-                  <Text>Thank you for your business!</Text>
+                  {bankAccount && (
+                    <>
+                      <Text>Payment Method: Bank Transfer</Text>
+                      <Text>Account No: 12345678</Text>
+                      <Text>Thank you for your business!</Text>
+                    </>
+                  )}
                 </View>
                 <View style={styles.totals}>
-                  <Text>SubTotal: ${subTotal.toFixed(2)}</Text>
+                  <Text>SubTotal: ${total.toFixed(2)}</Text>
                   <Text>Discount: -${discount}</Text>
                   <Text>VAT: ${vat}</Text>
                   <Text>Other Charges: ${other}</Text>
@@ -148,7 +167,6 @@ const styles = StyleSheet.create({
   },
   summary: {
     flexDirection: 'row',
-    // justifyContent: 'space-between',
     marginVertical: 20,
     gap: 20,
   },
@@ -164,12 +182,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 10,
   },
-
   buttonContainer: {
     flexDirection: 'row',
     gap: 10,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     padding: 10,
   },
 });
+
 export default InvoiceModal;
