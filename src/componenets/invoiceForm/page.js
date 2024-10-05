@@ -129,9 +129,7 @@ const InvoiceFormPage = ({handleSave, date, setDate}) => {
                         setOpenAccordionIndex(
                           openAccordionIndex === index ? null : index,
                         );
-                      }}
-                      // style={styles.taskContainer}
-                    >
+                      }}>
                       <Divider
                         style={{
                           backgroundColor: colors.secondary,
@@ -174,7 +172,7 @@ const InvoiceFormPage = ({handleSave, date, setDate}) => {
                           label="Quantity"
                           value={String(task.quantity)}
                           keyboardType="numeric"
-                          style={styles.quantityInput}
+                          style={[styles.quantityInput, styles.input]}
                           onChangeText={text =>
                             handleTaskChange(
                               setFieldValue,
@@ -369,7 +367,7 @@ const styles = StyleSheet.create({
   },
   quantityInput: {
     flex: 1,
-    marginHorizontal: 10,
+    // marginHorizontal: 10,
   },
   errorText: {
     color: 'red',
