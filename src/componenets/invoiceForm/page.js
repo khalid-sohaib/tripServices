@@ -8,11 +8,15 @@ import {
   List,
   Divider,
   Checkbox,
+  useTheme,
 } from 'react-native-paper';
 import {Formik} from 'formik';
 import DateTimePicker from 'react-native-ui-datepicker';
+import {colors} from '../../theme/colors';
+import {validationSchema} from './validationSchema';
 
 const InvoiceFormPage = ({handleSave, date, setDate}) => {
+  const {colors} = useTheme();
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
   const [openAccordionIndex, setOpenAccordionIndex] = useState(0);
 
@@ -59,6 +63,7 @@ const InvoiceFormPage = ({handleSave, date, setDate}) => {
           companyName: false,
           bankAccount: false,
         }}
+        validationSchema={validationSchema}
         onSubmit={values => {
           console.log('Form Submitted:', values);
           values.discount = -Math.abs(values.discount);
@@ -129,9 +134,8 @@ const InvoiceFormPage = ({handleSave, date, setDate}) => {
                     >
                       <Divider
                         style={{
-                          backgroundColor: 'gray',
+                          backgroundColor: colors.secondary,
                           height: 1,
-                          marginBottom: 10,
                         }}
                       />
 
@@ -348,7 +352,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   input: {
-    marginBottom: 10,
+    // height: 50, // Adjust height as needed
+    borderColor: colors.primary,
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    backgroundColor: colors.subtleBackground,
+    color: colors.text,
+    fontSize: 16,
+    margin: 10,
   },
   quantityContainer: {
     flexDirection: 'row',
@@ -367,7 +379,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   taskContainer: {
-    borderBlockColor: 'gray',
+    borderColor: colors.secondary,
     borderStyle: 'solid',
     borderWidth: 1,
     marginBottom: 10,
