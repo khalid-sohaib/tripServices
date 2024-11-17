@@ -90,11 +90,11 @@ const InvoiceModal = ({
                   )}
                 </View>
                 <View style={styles.totals}>
-                  <Text>SubTotal: ${total.toFixed(2)}</Text>
-                  <Text>Discount: -${discount}</Text>
-                  <Text>VAT: ${vat}</Text>
-                  <Text>Other Charges: ${other}</Text>
-                  <Text style={styles.total}>Total: ${total.toFixed(2)}</Text>
+                  <Text>SubTotal: £{total.toFixed(2)}</Text>
+                  <Text>Discount: -£{discount}</Text>
+                  <Text>VAT: £{vat}</Text>
+                  <Text>Other Charges: £{other}</Text>
+                  <Text style={styles.total}>Total: £{total.toFixed(2)}</Text>
                 </View>
               </View>
               <View style={styles.buttonContainer}>

@@ -8,15 +8,15 @@ import {
   List,
   Divider,
   Checkbox,
-  useTheme,
+  // useTheme,
 } from 'react-native-paper';
 import {Formik} from 'formik';
 import DateTimePicker from 'react-native-ui-datepicker';
-import {colors} from '../../theme/colors';
 import {validationSchema} from './validationSchema';
+import {colors} from '../../theme/colors';
 
 const InvoiceFormPage = ({handleSave, date, setDate}) => {
-  const {colors} = useTheme();
+  // const {colors} = useTheme();
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
   const [openAccordionIndex, setOpenAccordionIndex] = useState(0);
 
@@ -63,13 +63,13 @@ const InvoiceFormPage = ({handleSave, date, setDate}) => {
           companyName: false,
           bankAccount: false,
         }}
-        validationSchema={validationSchema}
         onSubmit={values => {
           console.log('Form Submitted:', values);
           values.discount = -Math.abs(values.discount);
           console.log('Processed Values:', values);
           handleSave(values);
-        }}>
+        }}
+        validationSchema={validationSchema}>
         {({
           values,
           handleChange,
@@ -318,7 +318,21 @@ const InvoiceFormPage = ({handleSave, date, setDate}) => {
                   />
                   <Text> Add bank account</Text>
                 </View>
-                <Button mode="contained" onPress={resetForm}>
+                <Button
+                  mode="contained"
+                  onPress={() =>
+                    resetForm({
+                      values: {
+                        billTo: '',
+                        discount: 0,
+                        vat: 0,
+                        other: 0,
+                        tasks: [{description: '', quantity: 1, unitPrice: 0}], // Reset to initial task
+                        companyName: false,
+                        bankAccount: false,
+                      },
+                    })
+                  }>
                   Reset
                 </Button>
                 <Button
