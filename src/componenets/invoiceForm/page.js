@@ -220,7 +220,7 @@ const InvoiceFormPage = ({handleSave, date, setDate}) => {
                         value={String(task.quantity * task.unitPrice)}
                         editable={false}
                         style={styles.input}
-                        right={<TextInput.Affix text="USD" />}
+                        right={<TextInput.Affix text="£" />}
                       />
 
                       {/* Delete button (not for the first task) */}
@@ -286,7 +286,7 @@ const InvoiceFormPage = ({handleSave, date, setDate}) => {
                   label="Total"
                   value={String(total)}
                   editable={false}
-                  right={<TextInput.Affix text="USD" />}
+                  right={<TextInput.Affix text="£" />}
                   style={styles.input}
                 />
 
