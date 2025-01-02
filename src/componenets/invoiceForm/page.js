@@ -56,12 +56,17 @@ const InvoiceFormPage = ({handleSave, date, setDate}) => {
       <Formik
         initialValues={{
           billTo: '',
+          customerAddress: '',
           discount: 0,
           vat: 0,
           other: 0,
           tasks: [{description: '', quantity: 1, unitPrice: 0}],
           companyName: false,
           bankAccount: false,
+          specialInstructions: false,
+          email: false,
+          phone: false,
+          all: false,
         }}
         onSubmit={values => {
           console.log('Form Submitted:', values);
@@ -79,187 +84,230 @@ const InvoiceFormPage = ({handleSave, date, setDate}) => {
           resetForm,
         }) => {
           const {total} = calculateTotal(values);
+          // Function to handle the "Add all" checkbox
+          const handleAllCheckbox = checked => {
+            setFieldValue('all', checked);
+            setFieldValue('companyName', checked);
+            setFieldValue('bankAccount', checked);
+            setFieldValue('specialInstructions', checked);
+            setFieldValue('email', checked);
+            setFieldValue('phone', checked);
+          };
 
+          // Determine if "all" should be checked based on individual states
+          const isAllChecked =
+            values.companyName &&
+            values.bankAccount &&
+            values.specialInstructions &&
+            values.email &&
+            values.phone;
+
+          // Update "all" checkbox dynamically
+          if (values.all !== isAllChecked) {
+            setFieldValue('all', isAllChecked);
+          }
           return (
             <SafeAreaView style={styles.container}>
               <ScrollView contentContainerStyle={styles.scrollView}>
                 {/* 1: Date Section */}
-                <Text style={styles.sectionTitle}>Date</Text>
-                <Button
-                  onPress={() => setDatePickerVisible(true)}
-                  mode="outlined"
-                  style={styles.button}>
-                  Select Date: {date.format('YYYY-MM-DD')}
-                </Button>
-                {isDatePickerVisible && (
-                  <View style={styles.datePicker}>
-                    <DateTimePicker
-                      mode="single"
-                      date={date}
-                      onChange={params => {
-                        setDate(params.date);
-                        setFieldValue('date', params.date);
-                        setDatePickerVisible(false);
-                      }}
-                    />
-                  </View>
-                )}
-                {/* 2: Customer Section */}
-                <Text style={styles.sectionTitle}>Customer</Text>
-                <TextInput
-                  label="Bill To"
-                  value={values.billTo}
-                  onChangeText={handleChange('billTo')}
-                  error={!!errors.billTo}
-                  style={styles.input}
-                />
-                {errors.billTo && (
-                  <Text style={styles.errorText}>{errors.billTo}</Text>
-                )}
-                {/* 3: Task Section */}
-                <Text style={styles.sectionTitle}>Tasks</Text>
-
-                {values.tasks.map((task, index) => (
-                  <View style={styles.taskContainer}>
-                    <List.Accordion
-                      key={index}
-                      title={`Task ${index + 1}`}
-                      expanded={openAccordionIndex === index}
-                      onPress={() => {
-                        setOpenAccordionIndex(
-                          openAccordionIndex === index ? null : index,
-                        );
-                      }}>
-                      <Divider
-                        style={{
-                          backgroundColor: colors.secondary,
-                          height: 1,
+                <View style={styles.sectionContainer}>
+                  <Text style={styles.sectionTitle}>Date</Text>
+                  <Button
+                    onPress={() => setDatePickerVisible(true)}
+                    mode="outlined"
+                    style={styles.button}>
+                    Select Date: {date.format('YYYY-MM-DD')}
+                  </Button>
+                  {isDatePickerVisible && (
+                    <View style={styles.datePicker}>
+                      <DateTimePicker
+                        mode="single"
+                        date={date}
+                        onChange={params => {
+                          setDate(params.date);
+                          setFieldValue('date', params.date);
+                          setDatePickerVisible(false);
                         }}
                       />
+                    </View>
+                  )}
+                </View>
 
-                      {/* Task description input */}
-                      <TextInput
-                        label={`Task ${index + 1} Description`}
-                        value={task.description}
-                        onChangeText={text =>
-                          handleTaskChange(
-                            setFieldValue,
-                            index,
-                            'description',
-                            text,
-                            values.tasks,
-                          )
-                        }
-                        style={styles.input}
-                      />
+                {/* 2: Customer Section */}
+                <View style={styles.sectionContainer}>
+                  <Text style={styles.sectionTitle}>Customer</Text>
+                  <TextInput
+                    label="Customer Name"
+                    value={values.billTo}
+                    onChangeText={handleChange('billTo')}
+                    error={!!errors.billTo}
+                    style={styles.input}
+                  />
+                  {errors.billTo && (
+                    <Text style={styles.errorText}>{errors.billTo}</Text>
+                  )}
+                  <TextInput
+                    label="Customer Address"
+                    value={values.customerAddress}
+                    onChangeText={handleChange('customerAddress')}
+                    error={!!errors.customerAddress}
+                    style={styles.input}
+                  />
+                  {errors.customerAddress && (
+                    <Text style={styles.errorText}>
+                      {errors.customerAddress}
+                    </Text>
+                  )}
+                </View>
 
-                      {/* Quantity input and controls */}
-                      <View style={styles.quantityContainer}>
-                        <IconButton
-                          icon="minus"
-                          size={20}
-                          onPress={() =>
-                            handleTaskChange(
-                              setFieldValue,
-                              index,
-                              'quantity',
-                              Math.max(1, task.quantity - 1),
-                              values.tasks,
-                            )
-                          }
-                        />
+                {/* 3: Task Section */}
+                <View style={styles.sectionContainer}>
+                  <Text style={styles.sectionTitle}>Tasks</Text>
+
+                  {values.tasks.map((task, index) => (
+                    <View style={styles.accordionContainer}>
+                      <List.Accordion
+                        key={index}
+                        title={`Task ${index + 1}`}
+                        expanded={openAccordionIndex === index}
+                        onPress={() => {
+                          setOpenAccordionIndex(
+                            openAccordionIndex === index ? null : index,
+                          );
+                        }}>
+                        <Divider style={styles.divider} />
+
+                        {/* Task description input */}
                         <TextInput
-                          label="Quantity"
-                          value={String(task.quantity)}
-                          keyboardType="numeric"
-                          style={[styles.quantityInput, styles.input]}
+                          label={`Task ${index + 1} Description`}
+                          value={task.description}
                           onChangeText={text =>
                             handleTaskChange(
                               setFieldValue,
                               index,
-                              'quantity',
+                              'description',
+                              text,
+                              values.tasks,
+                            )
+                          }
+                          style={styles.input}
+                          error={
+                            !!(errors.tasks && errors.tasks[index]?.description)
+                          }
+                        />
+                        {errors.tasks && errors.tasks[index]?.description && (
+                          <Text style={styles.errorText}>
+                            {errors.tasks[index]?.description}
+                          </Text>
+                        )}
+
+                        {/* Quantity input and controls */}
+                        <View style={styles.quantityContainer}>
+                          <IconButton
+                            icon="minus"
+                            size={20}
+                            onPress={() =>
+                              handleTaskChange(
+                                setFieldValue,
+                                index,
+                                'quantity',
+                                Math.max(1, task.quantity - 1),
+                                values.tasks,
+                              )
+                            }
+                          />
+                          <TextInput
+                            label="Quantity"
+                            value={String(task.quantity)}
+                            keyboardType="numeric"
+                            style={[styles.quantityInput, styles.input]}
+                            onChangeText={text =>
+                              handleTaskChange(
+                                setFieldValue,
+                                index,
+                                'quantity',
+                                Number(text),
+                                values.tasks,
+                              )
+                            }
+                            error={
+                              !!(errors.tasks && errors.tasks[index]?.quantity)
+                            }
+                          />
+                          {errors.tasks && errors.tasks[index]?.quantity && (
+                            <Text style={styles.errorText}>
+                              {errors.tasks[index]?.quantity}
+                            </Text>
+                          )}
+
+                          <IconButton
+                            icon="plus"
+                            size={20}
+                            onPress={() =>
+                              handleTaskChange(
+                                setFieldValue,
+                                index,
+                                'quantity',
+                                task.quantity + 1,
+                                values.tasks,
+                              )
+                            }
+                          />
+                        </View>
+
+                        {/* Unit price input */}
+                        <TextInput
+                          label="Unit Price"
+                          value={String(task.unitPrice)}
+                          onChangeText={text =>
+                            handleTaskChange(
+                              setFieldValue,
+                              index,
+                              'unitPrice',
                               Number(text),
                               values.tasks,
                             )
                           }
-                        />
-                        <IconButton
-                          icon="plus"
-                          size={20}
-                          onPress={() =>
-                            handleTaskChange(
-                              setFieldValue,
-                              index,
-                              'quantity',
-                              task.quantity + 1,
-                              values.tasks,
-                            )
+                          keyboardType="numeric"
+                          style={styles.input}
+                          error={
+                            !!(errors.tasks && errors.tasks[index]?.unitPrice)
                           }
+                          right={<TextInput.Affix text="£" />}
                         />
-                      </View>
+                        {errors.tasks && errors.tasks[index]?.unitPrice && (
+                          <Text style={styles.errorText}>
+                            {errors.tasks[index]?.unitPrice}
+                          </Text>
+                        )}
+                        {/* Delete button (not for the first task) */}
+                        {index !== 0 && (
+                          <Button
+                            mode="outlined"
+                            onPress={() => {
+                              const updatedTasks = values.tasks.filter(
+                                (_, taskIndex) => taskIndex !== index,
+                              );
+                              setFieldValue('tasks', updatedTasks);
+                            }}
+                            style={styles.deleteButton}>
+                            Delete Task
+                          </Button>
+                        )}
+                      </List.Accordion>
+                    </View>
+                  ))}
 
-                      {/* Unit price input */}
-                      <TextInput
-                        label="Unit Price"
-                        value={String(task.unitPrice)}
-                        onChangeText={text =>
-                          handleTaskChange(
-                            setFieldValue,
-                            index,
-                            'unitPrice',
-                            Number(text),
-                            values.tasks,
-                          )
-                        }
-                        keyboardType="numeric"
-                        style={styles.input}
-                      />
+                  <Button
+                    onPress={() => addTask(setFieldValue, values.tasks)}
+                    mode="contained"
+                    style={styles.button}>
+                    Add Task
+                  </Button>
+                </View>
 
-                      <TextInput
-                        label="SubTotal"
-                        value={String(task.quantity * task.unitPrice)}
-                        editable={false}
-                        style={styles.input}
-                        right={<TextInput.Affix text="£" />}
-                      />
-
-                      {/* Delete button (not for the first task) */}
-                      {index !== 0 && (
-                        <Button
-                          mode="outlined"
-                          onPress={() => {
-                            const updatedTasks = values.tasks.filter(
-                              (_, taskIndex) => taskIndex !== index,
-                            );
-                            setFieldValue('tasks', updatedTasks);
-                          }}
-                          style={styles.deleteButton}>
-                          Delete Task
-                        </Button>
-                      )}
-                    </List.Accordion>
-                  </View>
-                ))}
-
-                <Button
-                  onPress={() => addTask(setFieldValue, values.tasks)}
-                  mode="outlined"
-                  style={styles.button}>
-                  Add Task
-                </Button>
                 {/* 4: Summary Section */}
                 <Text style={styles.sectionTitle}>Summary</Text>
-                <TextInput
-                  label="Discount"
-                  value={String(values.discount)}
-                  onChangeText={handleChange('discount')}
-                  keyboardType="numeric"
-                  error={!!errors.discount}
-                  style={styles.input}
-                />
-                {errors.discount && (
-                  <Text style={styles.errorText}>{errors.discount}</Text>
-                )}
                 <TextInput
                   label="VAT"
                   value={String(values.vat)}
@@ -271,17 +319,7 @@ const InvoiceFormPage = ({handleSave, date, setDate}) => {
                 {errors.vat && (
                   <Text style={styles.errorText}>{errors.vat}</Text>
                 )}
-                <TextInput
-                  label="Other Charges"
-                  value={String(values.other)}
-                  onChangeText={handleChange('other')}
-                  keyboardType="numeric"
-                  error={!!errors.other}
-                  style={styles.input}
-                />
-                {errors.other && (
-                  <Text style={styles.errorText}>{errors.other}</Text>
-                )}
+
                 <TextInput
                   label="Total"
                   value={String(total)}
@@ -289,58 +327,72 @@ const InvoiceFormPage = ({handleSave, date, setDate}) => {
                   right={<TextInput.Affix text="£" />}
                   style={styles.input}
                 />
-
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                  }}>
-                  <Checkbox
-                    status={values.companyName ? 'checked' : 'unchecked'}
+                <View style={styles.sectionContainer}>
+                  <List.Accordion
+                    title="Additional Details"
+                    expanded={values.openAccordion}
                     onPress={() =>
-                      setFieldValue('companyName', !values.companyName)
-                    }
-                  />
-                  <Text> Add company name</Text>
-                </View>
+                      setFieldValue('openAccordion', !values.openAccordion)
+                    }>
+                    <Divider style={styles.divider} />
 
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginBottom: 10,
-                  }}>
-                  <Checkbox
-                    status={values.bankAccount ? 'checked' : 'unchecked'}
-                    onPress={() =>
-                      setFieldValue('bankAccount', !values.bankAccount)
-                    }
-                  />
-                  <Text> Add bank account</Text>
-                </View>
-                <Button
-                  mode="contained"
-                  onPress={() =>
-                    resetForm({
-                      values: {
-                        billTo: '',
-                        discount: 0,
-                        vat: 0,
-                        other: 0,
-                        tasks: [{description: '', quantity: 1, unitPrice: 0}], // Reset to initial task
-                        companyName: false,
-                        bankAccount: false,
+                    {/* Checkbox Options */}
+                    {[
+                      {label: 'Add company name', key: 'companyName'},
+                      {label: 'Add bank account', key: 'bankAccount'},
+                      {
+                        label: 'Add special instructions',
+                        key: 'specialInstructions',
                       },
-                    })
-                  }>
-                  Reset
-                </Button>
-                <Button
-                  mode="contained"
-                  onPress={handleSubmit}
-                  style={styles.submitButton}>
-                  Submit Invoice
-                </Button>
+                      {label: 'Add email', key: 'email'},
+                      {label: 'Add phone', key: 'phone'},
+                    ].map(({label, key}) => (
+                      <View style={styles.checkboxContainer} key={key}>
+                        <Checkbox
+                          status={values[key] ? 'checked' : 'unchecked'}
+                          onPress={() => setFieldValue(key, !values[key])}
+                        />
+                        <Text>{label}</Text>
+                      </View>
+                    ))}
+
+                    {/* Add All Checkbox */}
+                    <View style={styles.checkboxContainer}>
+                      <Checkbox
+                        status={values.all ? 'checked' : 'unchecked'}
+                        onPress={() => handleAllCheckbox(!values.all)}
+                      />
+                      <Text>Add all</Text>
+                    </View>
+                  </List.Accordion>
+                </View>
+
+                <View style={styles.buttonContainer}>
+                  <Button
+                    mode="contained"
+                    style={styles.button}
+                    onPress={() =>
+                      resetForm({
+                        values: {
+                          billTo: '',
+                          discount: 0,
+                          vat: 0,
+                          other: 0,
+                          tasks: [{description: '', quantity: 1, unitPrice: 0}], // Reset to initial task
+                          companyName: false,
+                          bankAccount: false,
+                        },
+                      })
+                    }>
+                    Reset
+                  </Button>
+                  <Button
+                    mode="contained"
+                    onPress={handleSubmit}
+                    style={styles.button}>
+                    Submit Invoice
+                  </Button>
+                </View>
               </ScrollView>
             </SafeAreaView>
           );
@@ -352,32 +404,61 @@ const InvoiceFormPage = ({handleSave, date, setDate}) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#F5FCFF',
+    backgroundColor: colors.subtleBackground,
   },
   scrollView: {
-    padding: 20,
+    padding: 10,
+  },
+  buttonContainer: {
+    marginVertical: 10,
   },
   button: {
     marginBottom: 20,
+    borderRadius: 5,
   },
   datePicker: {
-    marginBottom: 20,
+    // marginBottom: 10,
+  },
+  sectionContainer: {
+    borderColor: colors.secondary,
+    borderStyle: 'solid',
+    borderWidth: 1,
+    marginVertical: 10,
+    backgroundColor: colors.background,
+    borderRadius: 5,
+    padding: 5,
+  },
+  accordionContainer: {
+    borderColor: colors.primary,
+    borderStyle: 'solid',
+    borderWidth: 1,
+    marginBottom: 10,
+    backgroundColor: colors.background,
+    borderRadius: 5,
+    padding: 10,
+  },
+  sectionTitle: {
+    padding: 5,
+    paddingHorizontal: 5,
+    color: colors.primary,
+    fontSize: 18,
+    fontWeight: 700,
   },
   input: {
     // height: 50, // Adjust height as needed
-    borderColor: colors.primary,
+    borderColor: colors.text,
     borderWidth: 1,
     borderRadius: 5,
     paddingHorizontal: 10,
     backgroundColor: colors.subtleBackground,
     color: colors.text,
     fontSize: 16,
-    margin: 10,
+    marginVertical: 5,
   },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 10,
+    // marginVertical: 0,
   },
   quantityInput: {
     flex: 1,
@@ -390,10 +471,18 @@ const styles = StyleSheet.create({
   submitButton: {
     marginTop: 20,
   },
-  taskContainer: {
-    borderColor: colors.secondary,
-    borderStyle: 'solid',
-    borderWidth: 1,
+  deleteButton: {
+    margin: 10,
+  },
+  divider: {
+    backgroundColor: colors.primary,
+    height: 1,
+    marginBottom: 10,
+  },
+  checkboxContainer: {
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 10,
   },
 });

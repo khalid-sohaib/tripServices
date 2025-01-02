@@ -2,7 +2,7 @@ import * as React from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {Button, Modal, Portal, Text} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Ensure you have react-native-vector-icons installed
-
+import {useNavigation} from '@react-navigation/native';
 const InvoiceModal = ({
   visible = true,
   hideModal,
@@ -10,9 +10,20 @@ const InvoiceModal = ({
   handlePrint,
   handleShare,
 }) => {
-  const {date, billTo, discount, vat, other, tasks, companyName, bankAccount} =
-    invoiceValues;
-
+  const navigation = useNavigation();
+  const {
+    date,
+    billTo,
+    customerAddress,
+    discount,
+    vat,
+    other,
+    tasks,
+    companyName,
+    bankAccount,
+    phone,
+    email,
+  } = invoiceValues;
   // Calculate totals
   const subTotals = tasks?.map(task => ({
     ...task,
@@ -33,7 +44,13 @@ const InvoiceModal = ({
             visible={visible}
             onDismiss={hideModal}
             contentContainerStyle={styles.modalContainer}>
-            <View style={{maxHeight: 600}}>
+            <View style={{maxHeight: 750}}>
+              <Icon
+                style={{alignSelf: 'flex-end', marginLeft: 10, marginBottom: 5}}
+                size={22}
+                onPress={hideModal}>
+                close
+              </Icon>
               <ScrollView>
                 {/* Header and Invoice Info */}
                 <View style={styles.invoiceContainer}>
@@ -61,6 +78,10 @@ const InvoiceModal = ({
                       <Text>Bill To: {billTo}</Text>
                       <Icon name="person" style={styles.icon} />
                     </View>
+                    <View style={styles.iconTextRow}>
+                      <Text>Address: {customerAddress}</Text>
+                      <Icon name="home" style={styles.icon} />
+                    </View>
                   </View>
                 </View>
                 {/* Service Table */}
@@ -87,9 +108,7 @@ const InvoiceModal = ({
                   {/* Summary Rows */}
                   {[
                     {label: 'SubTotal', value: total.toFixed(2)},
-                    {label: 'Discount', value: `-${discount}`},
-                    {label: 'VAT', value: vat},
-                    {label: 'Other Charges', value: other},
+                    {label: 'VAT', value: parseFloat(vat).toFixed(2)},
                     {label: 'Total', value: total.toFixed(2), isTotal: true},
                   ].map((item, index) => (
                     <View key={index} style={styles.tableRow}>
@@ -119,36 +138,58 @@ const InvoiceModal = ({
                 {bankAccount && (
                   <View style={styles.paymentInfo}>
                     <Text>Payment Method: Bank Transfer</Text>
-                    <Text>Bank Name: Santander UK</Text>
-                    <Text>Account No: GB15 ABBY 6016 1331 9268 19</Text>
+                    <Text>Sort Code: 60-06-14</Text>
+                    <Text>Account No: 35390018</Text>
                   </View>
                 )}
 
                 {/* Footer */}
                 <Text style={styles.thankYouText}>Thank you!</Text>
-                <Text>We really appreciate your business.</Text>
-                <View style={styles.contactFooter}>
-                  <View style={styles.contactInfo}>
-                    <View style={styles.contactFooterText}>
-                      <Text>tripservices@hotmail.com</Text>
-                      <Icon name="email" style={styles.footerIcon} />
-                    </View>
-                    <View style={styles.contactFooterText}>
-                      <Text>+447529910522</Text>
-                      <Icon name="phone" style={styles.footerIcon} />
+                <Text style={{textAlign: 'center'}}>
+                  We really appreciate your business.
+                </Text>
+                {(email || phone) && (
+                  <View style={styles.contactFooter}>
+                    <View style={styles.contactInfo}>
+                      {email && (
+                        <View style={styles.contactFooterText}>
+                          <Text>tripservices@hotmail.com</Text>
+                          <Icon name="email" style={styles.footerIcon} />
+                        </View>
+                      )}
+                      {phone && (
+                        <View style={styles.contactFooterText}>
+                          <Text>+447529910522</Text>
+                          <Icon name="phone" style={styles.footerIcon} />
+                        </View>
+                      )}
                     </View>
                   </View>
-                </View>
+                )}
 
                 {/* Buttons */}
                 <View style={styles.buttonContainer}>
-                  <Button mode="contained" onPress={handlePrint}>
+                  <Button
+                    mode="outlined"
+                    style={styles.button}
+                    onPress={handlePrint}>
                     Save
                   </Button>
-                  <Button mode="contained" onPress={handleShare}>
+                  <Button
+                    mode="outlined"
+                    style={styles.button}
+                    onPress={handleShare}>
                     Share
                   </Button>
                 </View>
+                <Button
+                  mode="contained"
+                  // style={styles.button}
+                  onPress={() => {
+                    navigation.navigate('Home'); // Navigate to the Home screen
+                  }}>
+                  Back to Home
+                </Button>
               </ScrollView>
             </View>
           </Modal>
@@ -159,129 +200,137 @@ const InvoiceModal = ({
 };
 
 const styles = StyleSheet.create({
-  invoiceContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  invoiceLeft: {
-    justifyContent: 'flex-start',
-  },
-  invoiceRightWithIcons: {
-    alignItems: 'flex-end',
-    marginTop: 20,
-    // gap: 5,
-  },
   modalContainer: {
     backgroundColor: 'white',
     padding: 20,
+    // margin: 20,
+    borderRadius: 10,
+  },
+  invoiceContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    // marginBottom: 20,
+  },
+  invoiceLeft: {
+    flex: 1,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: 5,
   },
   businessName: {
     fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: '600',
+    marginBottom: 2,
   },
   tagline: {
     fontSize: 14,
-    color: 'orange',
-    textAlign: 'center',
-    marginBottom: 20,
+    fontStyle: 'italic',
+    color: 'gray',
   },
-  invoiceInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  invoiceLeft: {
-    justifyContent: 'flex-start',
-  },
-  invoiceRight: {
-    alignItems: 'flex-end',
+  invoiceRightWithIcons: {
+    marginTop: 10,
+    flex: 1,
+    justifyContent: 'flex-end',
   },
   iconTextRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 5,
-    gap: 5,
+    justifyContent: 'space-between',
+    marginBottom: 8,
   },
   icon: {
-    marginRight: 5,
-    fontSize: 18,
-    color: '#3c3cce',
+    marginLeft: 10,
+    fontSize: 16,
+    color: 'gray',
   },
   table: {
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#000',
-    marginBottom: 20,
+    marginVertical: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    overflow: 'hidden',
   },
   tableHeader: {
     flexDirection: 'row',
+    backgroundColor: '#f4f4f4',
+    paddingVertical: 10,
+    paddingHorizontal: 5,
     justifyContent: 'space-between',
-    backgroundColor: '#f0f0f0',
-    padding: 10,
   },
   tableHeaderText: {
+    flex: 1,
     fontWeight: 'bold',
-    width: '25%',
+    fontSize: 14,
     textAlign: 'center',
   },
   tableRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 5,
     borderBottomWidth: 1,
-    borderColor: '#000',
+    borderBottomColor: '#ccc',
   },
   tableCell: {
-    width: '25%',
+    flex: 1,
+    fontSize: 12,
     textAlign: 'center',
   },
   summaryLabel: {
-    textAlign: 'right',
+    fontSize: 14,
+    textAlign: 'center',
   },
   summaryValue: {
+    fontSize: 14,
     textAlign: 'center',
+    color: 'green',
   },
   boldText: {
     fontWeight: 'bold',
-    fontSize: 16,
+    color: 'black',
   },
   paymentInfo: {
     marginVertical: 20,
+    padding: 10,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 5,
   },
   thankYouText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginTop: 20,
+    textAlign: 'center',
+    marginVertical: 10,
   },
   contactFooter: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end', // Align the contact info to the right
-    marginTop: 10,
+    marginVertical: 20,
+    padding: 10,
+    // backgroundColor: '#f4f4f4',
+    borderRadius: 5,
   },
   contactInfo: {
-    alignItems: 'flex-end', // Align text and icons to the right side
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   contactFooterText: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    marginVertical: 5,
   },
   footerIcon: {
-    color: '#3c3cce',
+    marginLeft: 10,
+    fontSize: 14,
+    color: 'gray',
   },
   buttonContainer: {
     flexDirection: 'row',
-    gap: 10,
-    justifyContent: 'center',
-    padding: 10,
+    justifyContent: 'space-between',
+    marginVertical: 20,
+  },
+  button: {
+    width: 160,
   },
 });
 

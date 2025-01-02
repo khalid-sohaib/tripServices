@@ -32,7 +32,7 @@ const InvoiceForm = () => {
   };
 
   const generatePDF = async values => {
-    const htmlContent = generateInvoiceHtml(values, date);
+    const htmlContent = await generateInvoiceHtml(values, date);
 
     try {
       const pdfOptions = {
@@ -51,7 +51,7 @@ const InvoiceForm = () => {
   };
   const printPDF = async values => {
     try {
-      const htmlContent = generateInvoiceHtml(values, date);
+      const htmlContent = await generateInvoiceHtml(values, date);
 
       // Create the directory if it doesn't exist
       // const invoicesDirectory = `${RNFS.ExternalDirectoryPath}/Invoices`;
@@ -76,6 +76,7 @@ const InvoiceForm = () => {
   };
 
   const handleShare = async () => {
+    console.log('handle Share working');
     const filePath = await generatePDF(invoiceValues);
     if (filePath) {
       try {

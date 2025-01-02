@@ -2,8 +2,9 @@ import React from 'react';
 import {ImageBackground, SafeAreaView, StyleSheet, View} from 'react-native';
 import {Button, Icon} from 'react-native-paper';
 import {useNavigation} from '@react-navigation/native';
-import Logo from '../../theme/assets/trip-logo.png';
+import Logo from '../../theme/assets/TE1-02.png';
 import BgImage from '../../theme/assets/bgImage.jpg';
+import {colors} from '../../theme/colors';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -15,7 +16,10 @@ const HomeScreen = () => {
         style={styles.background}
         resizeMode="cover">
         <View style={styles.overlay} />
-        <Icon source={Logo} size={300} />
+        <View style={styles.header}>
+          <Icon source={Logo} size={300} />
+        </View>
+        <View style={styles.headerStrip}></View>
 
         <View style={styles.container}>
           <Button
@@ -47,12 +51,26 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
   container: {
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     height: '100%',
+  },
+  header: {
+    backgroundColor: 'white',
+    width: '100%',
+    alignItems: 'center',
+    borderBottomRightRadius: 50,
+    borderBottomLeftRadius: 50,
+  },
+  headerStrip: {
+    borderBottomRightRadius: 50,
+    borderBottomLeftRadius: 50,
+    padding: 10,
+    width: '79%',
+    backgroundColor: colors.accent,
   },
   button: {
     height: 50,

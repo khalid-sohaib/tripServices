@@ -1,20 +1,48 @@
-export const generateInvoiceHtml = (values, date) => {
-  const {billTo, discount, vat, other, tasks, companyName, bankAccount} =
-    values;
+import {companyLogoBase64} from './companyLogoBase64';
+export const generateInvoiceHtml = async (values, date) => {
+  const {
+    billTo,
+    customerAddress,
+    discount,
+    vat,
+    other,
+    tasks,
+    companyName,
+    bankAccount,
+    email,
+    phone,
+    specialInstructions,
+  } = values;
 
-  // Calculate subtotal for all tasks
-  const subTotal = tasks.reduce((sum, task) => {
-    const taskQuantity = parseFloat(task.quantity) || 0;
-    const taskUnitPrice = parseFloat(task.unitPrice) || 0;
-    return sum + taskQuantity * taskUnitPrice;
-  }, 0);
+  console.log('template:   --- ', values);
+  const invoiceNo = generateInvoiceNumber();
+  const bankAccountNumber = '35390018';
+  const companyEmail = 'tripservices@hotmail.com';
+  const companyPhone = '+447529910522';
+  const companysName = 'TRIP SERVICES LTD';
+  const companyTagline = '24/7 Emergency Electrician Services';
+  const bankSortCode = '60-06-14';
 
-  // Calculate total
-  const total =
-    subTotal -
+  function generateInvoiceNumber() {
+    return Math.floor(100000 + Math.random() * 900000);
+  }
+
+  // Calculate subtotal for all tasks with precision
+  const subTotal = tasks
+    .reduce((sum, task) => {
+      const taskQuantity = parseFloat(task.quantity) || 0;
+      const taskUnitPrice = parseFloat(task.unitPrice) || 0;
+      return sum + taskQuantity * taskUnitPrice;
+    }, 0)
+    .toFixed(2);
+
+  // Calculate total with precision
+  const total = (
+    parseFloat(subTotal) -
     Math.abs(parseFloat(discount) || 0) +
     (parseFloat(vat) || 0) +
-    (parseFloat(other) || 0);
+    (parseFloat(other) || 0)
+  ).toFixed(2);
 
   // Build HTML for each task
   const taskRows = tasks
@@ -34,85 +62,275 @@ export const generateInvoiceHtml = (values, date) => {
     .join('');
 
   return `
-    <html>
-      <head>
-        <style>
-          body { font-family: Arial, sans-serif; }
-          .title { font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 10px; }
-          .businessName { font-size: 18px; font-weight: bold; text-align: center; }
-          .tagline { font-size: 14px; color: orange; text-align: center; margin-bottom: 20px; }
-          .invoiceInfo { display: flex; justify-content: space-between; margin-bottom: 20px; }
-          .contactInfo { text-align: right; }
-          .table { width: 100%; border-top: 1px solid #000; border-bottom: 1px solid #000; margin-bottom: 20px; }
-          .tableHeader, .tableRow { display: flex; justify-content: space-between; padding: 10px; }
-          .tableHeader { background-color: #f0f0f0; }
-          .tableHeaderText, .tableCell { width: 25%; text-align: center; }
-          .summary { display: flex; justify-content: space-between; margin-top: 20px; }
-          .paymentInfo { width: 50%; }
-          .totals { width: 50%; text-align: right; }
-          .total { font-weight: bold; font-size: 16px; margin-top: 10px; }
-        </style>
-      </head>
-      <body>
-        <h1 class="title">INVOICE</h1>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        line-height: 1;
+        font-size: 14px;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      .container {
+        padding: 0 10px;
+        flex: 1;
+        padding-bottom: 50px; 
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .header img {
+        width: 120px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 48px;
+        font-weight: bold;
+        color: #00488f;
+        margin-bottom:20px;
+      }
+      .company-info {
+        text-align: center;
+        font-size: 12px;
+      }
+      .company-logo{
+        text-align: center;
+        font-size: 12px;
+      }
+      .bill-to {
+        margin: 20px 0;
+      }
+      .bill-to p {
+        margin: 0;
+        font-size: 14px;
+        font-weight: bold;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      .detailsContainer {
+        margin-left: 60px;
+        margin-right: 60px;
+      }
+      table,
+      th,
+      td {
+        border: 1px solid black;
+      }
+      th,
+      td {
+        padding: 8px 12px;
+        text-align: center;
+        font-size: 14px;
+      }
+      th {
+        font-weight: bold;
+        background-color: #f2f2f2;
+      }
+      tfoot tr td:first-child {
+        border: none;
+      }
+      .totals {
+        text-align: right;
+        margin-top: 20px;
+      }
+      .special-instructions {
+        margin-top: 20px;
+        font-size: 14px;
+        font-weight: bold;
+      }
+      .special-instructions .spacer {
+        margin-top: 20px;
+        height: 40px;
+      }
+      .payment-instructions {
+        margin-top: 60px; 
+        text-align: left;
+        font-size: 14px;
+        line-height:0
+
+      }
+      .footer {
+        width: 100%;
+        text-align: center;
+        padding: 10px 0;
+        margin-top: auto; 
+        color: #00488f
+      }
+      .line {
+        border-top: 2px solid black;
+        margin: 10px 250px 30px 0;
+      }
+      strong {
+        font-weight: bold;
+      }
+      .row {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between; 
+        align-items: center; 
+        margin-bottom: 5px;
+      }
+      
+      .row p {
+        margin: 0; /* Remove default margins for better alignment */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header Section -->
+      <div class="header">
+        <div>
+          <h1>Invoice</h1>
+          
+          <div>
+            <div class="row" >
+              <p>Date: </p>
+              <p><strong>${date.format('DD/MM/YYYY')}</strong></p>
+            </div>
+            
+            <div class="row" >
+              <p>Invoice No: </p>
+              <p><strong>${invoiceNo}</strong></p>
+            </div>
+
+            <!-- Bill To Section -->
+            <div>
+            <div class="row" >
+              <p>Bill To: </p>
+              <p><strong>${billTo}</strong></p>
+            </div>
+
+            <div class="row" >
+              <p> </p>
+              <p> <strong>${customerAddress}</strong></p>
+            </div>
+          </div>
+        </div>
+        </div>
+        <div class="company-info">
         ${
           companyName
             ? `
-          <p class="businessName">Trip Services</p>
-          <p class="tagline">24/7 AT YOUR DOOR STEP</p>
-        `
+            <div class="company-logo">
+            <img src="${companyLogoBase64}" alt="Company Logo" />
+            <h3 style="color:#fa9626">${companyTagline}</h3>
+            </div>
+            `
             : ''
         }
 
-        <div class="invoiceInfo">
-          <div>
-            <p>Date: ${new Date(date).toLocaleDateString()}</p>
-            <p>Invoice No: #INV-001</p>
-            <p>Bill To: ${billTo}</p>
-          </div>
+        ${
+          phone
+            ? `
+        <p>Phone: ${companyPhone}</p>
+        `
+            : ''
+        }
+        ${
+          email
+            ? `
+        <p>Email: ${companyEmail}</p>
+        `
+            : ''
+        }
+        </div>
+      </div>
+
+     
+      <div class="detailsContainer">
+        <!-- Table Section -->
+          <table>
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${taskRows}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3" style="text-align: right">Sub Total</td>
+                <td>${subTotal}</td>
+              </tr>
+              <tr>
+                <td colspan="3" style="text-align: right">VAT</td>
+                <td>${parseFloat(vat).toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td colspan="3" style="text-align: right"><strong>Total</strong></td>
+                <td><strong>${total}</strong></td>
+              </tr>
+            </tfoot>
+          </table>
+
+        <!-- Special Instructions -->
+        <div class="special-instructions">
+        ${
+          specialInstructions
+            ? `
+          <p style="margin-bottom: 30px">Special Instruction</p>
+          <div class="line"></div>
+          <div class="line"></div>
+          `
+            : ''
+        }
+        </div>
+
+        <!-- Payment Info -->
+        <div class="payment-instructions">
           ${
             companyName
               ? `
-            <div class="contactInfo">
-              <p>Phone: +447529910522</p>
-              <p>Email: tripservices@hotmail.com</p>
-            </div>
+              <p>Make all payments to <strong>${companysName}</strong></p>
+              `
+              : ''
+          }
+          ${
+            bankAccount
+              ? `
+          <p>Sort Code: <strong>${bankSortCode}</strong> Account Number: <strong>${bankAccountNumber}</strong></p>
+          `
+              : ''
+          }
+          ${
+            email
+              ? `
+          <p>
+            If you have any questions concerning this invoice, contact
+            <strong>${companyEmail}</strong>
+          </p>
           `
               : ''
           }
         </div>
-
-        <table class="table">
-          <tr class="tableHeader">
-            <th class="tableHeaderText">Description</th>
-            <th class="tableHeaderText">Quantity</th>
-            <th class="tableHeaderText">Unit Price</th>
-            <th class="tableHeaderText">Amount</th>
-          </tr>
-          ${taskRows}
-        </table>
-
-        <div class="summary">
-        <div class="paymentInfo">
-          ${
-            bankAccount
-              ? `
-              <p>Payment Method: Bank Transfer</p>
-              <p>Account No: 12345678</p>
-              <p>Thank you for your business!</p>
-              `
-              : ''
-          }
-            </div>
-          <div class="totals">
-            <p>SubTotal: £${subTotal.toFixed(2)}</p>
-            <p>Discount: -£${Math.abs(parseFloat(discount) || 0).toFixed(2)}</p>
-            <p>VAT: £${(parseFloat(vat) || 0).toFixed(2)}</p>
-            <p>Other Charges: £${(parseFloat(other) || 0).toFixed(2)}</p>
-            <h2 class="total">Total: £${total.toFixed(2)}</h2>
-          </div>
         </div>
-      </body>
-    </html>
+
+      </div>
+      <!-- Footer -->
+      <div class="footer">
+        <p><strong>Thank You</strong></p>
+        <p>We appreciate your business</p>
+      </div>
+  </body>
+</html>
+
   `;
 };
