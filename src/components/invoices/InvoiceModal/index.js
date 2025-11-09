@@ -1,8 +1,11 @@
-import * as React from 'react';
+import React from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {Button, Modal, Portal, Text} from 'react-native-paper';
-import Icon from 'react-native-vector-icons/MaterialIcons'; // Ensure you have react-native-vector-icons installed
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import {useNavigation} from '@react-navigation/native';
+import {computeTotals, sanitizeTasks} from '../../../services/invoices/utils';
+import {COMPANY_INFO} from '../../../config/company';
+
 const InvoiceModal = ({
   visible = true,
   hideModal,
@@ -13,6 +16,7 @@ const InvoiceModal = ({
   const navigation = useNavigation();
   const {
     date,
+    invoiceNo,
     billTo,
     customerAddress,
     discount,
@@ -24,17 +28,15 @@ const InvoiceModal = ({
     phone,
     email,
   } = invoiceValues;
-  // Calculate totals
-  const subTotals = tasks?.map(task => ({
-    ...task,
-    subTotal: parseFloat(task.quantity) * parseFloat(task.unitPrice) || 0,
-  }));
 
-  const total =
-    subTotals?.reduce((acc, task) => acc + task.subTotal, 0) -
-    (parseFloat(discount) || 0) +
-    (parseFloat(vat) || 0) +
-    (parseFloat(other) || 0);
+  const sanitizedTasks = sanitizeTasks(tasks);
+  const {subTotal, total} = computeTotals({
+    tasks: sanitizedTasks,
+    discount,
+    vat,
+    other,
+  });
+  const taglineText = COMPANY_INFO.tagline.replace(/<br>/g, ' ');
 
   return (
     <>
@@ -44,24 +46,24 @@ const InvoiceModal = ({
             visible={visible}
             onDismiss={hideModal}
             contentContainerStyle={styles.modalContainer}>
-            <View style={{maxHeight: 750}}>
+            <View style={styles.contentWrapper}>
               <Icon
-                style={{alignSelf: 'flex-end', marginLeft: 10, marginBottom: 5}}
+                name="close"
+                style={styles.closeIcon}
                 size={22}
-                onPress={hideModal}>
-                close
-              </Icon>
+                onPress={hideModal}
+                accessibilityLabel="Close invoice preview"
+              />
               <ScrollView>
-                {/* Header and Invoice Info */}
                 <View style={styles.invoiceContainer}>
                   <View style={styles.invoiceLeft}>
                     <Text style={styles.title}>INVOICE</Text>
                     {companyName && (
                       <>
-                        <Text style={styles.businessName}>Trip Services</Text>
-                        <Text style={styles.tagline}>
-                          24/7 At Your Doorstep
+                        <Text style={styles.businessName}>
+                          {COMPANY_INFO.name}
                         </Text>
+                        <Text style={styles.tagline}>{taglineText}</Text>
                       </>
                     )}
                   </View>
@@ -71,7 +73,7 @@ const InvoiceModal = ({
                       <Icon name="calendar-today" style={styles.icon} />
                     </View>
                     <View style={styles.iconTextRow}>
-                      <Text>Invoice No: #INV-001</Text>
+                      <Text>Invoice No: {invoiceNo}</Text>
                       <Icon name="receipt" style={styles.icon} />
                     </View>
                     <View style={styles.iconTextRow}>
@@ -84,7 +86,7 @@ const InvoiceModal = ({
                     </View>
                   </View>
                 </View>
-                {/* Service Table */}
+
                 <View style={styles.table}>
                   <View style={styles.tableHeader}>
                     {['Description', 'Quantity', 'Unit Price', 'Amount'].map(
@@ -95,25 +97,26 @@ const InvoiceModal = ({
                       ),
                     )}
                   </View>
-                  {subTotals?.map((task, index) => (
-                    <View key={index} style={styles.tableRow}>
+                  {sanitizedTasks?.map(task => (
+                    <View key={task.id} style={styles.tableRow}>
                       <Text style={styles.tableCell}>{task.description}</Text>
                       <Text style={styles.tableCell}>{task.quantity}</Text>
-                      <Text style={styles.tableCell}>{task.unitPrice}</Text>
                       <Text style={styles.tableCell}>
-                        {task.subTotal.toFixed(2)}
+                        £{task.unitPrice.toFixed(2)}
+                      </Text>
+                      <Text style={styles.tableCell}>
+                        £{(task.quantity * task.unitPrice).toFixed(2)}
                       </Text>
                     </View>
                   ))}
-                  {/* Summary Rows */}
                   {[
-                    {label: 'SubTotal', value: total.toFixed(2)},
+                    {label: 'SubTotal', value: subTotal.toFixed(2)},
                     {label: 'VAT', value: parseFloat(vat).toFixed(2)},
                     {label: 'Total', value: total.toFixed(2), isTotal: true},
                   ].map((item, index) => (
                     <View key={index} style={styles.tableRow}>
-                      <Text style={styles.tableCell}></Text>
-                      <Text style={styles.tableCell}></Text>
+                      <Text style={styles.tableCell} />
+                      <Text style={styles.tableCell} />
                       <Text
                         style={[
                           styles.tableCell,
@@ -134,18 +137,18 @@ const InvoiceModal = ({
                   ))}
                 </View>
 
-                {/* Payment Method */}
                 {bankAccount && (
                   <View style={styles.paymentInfo}>
                     <Text>Payment Method: Bank Transfer</Text>
-                    <Text>Sort Code: 60-06-14</Text>
-                    <Text>Account No: 35390018</Text>
+                    <Text>Sort Code: {COMPANY_INFO.banking.sortCode}</Text>
+                    <Text>
+                      Account No: {COMPANY_INFO.banking.accountNumber}
+                    </Text>
                   </View>
                 )}
 
-                {/* Footer */}
                 <Text style={styles.thankYouText}>Thank you!</Text>
-                <Text style={{textAlign: 'center'}}>
+                <Text style={styles.footerCopy}>
                   We really appreciate your business.
                 </Text>
                 {(email || phone) && (
@@ -153,13 +156,13 @@ const InvoiceModal = ({
                     <View style={styles.contactInfo}>
                       {email && (
                         <View style={styles.contactFooterText}>
-                          <Text>tripservices@hotmail.com</Text>
+                          <Text>{COMPANY_INFO.email}</Text>
                           <Icon name="email" style={styles.footerIcon} />
                         </View>
                       )}
                       {phone && (
                         <View style={styles.contactFooterText}>
-                          <Text>+447529910522</Text>
+                          <Text>{COMPANY_INFO.phone}</Text>
                           <Icon name="phone" style={styles.footerIcon} />
                         </View>
                       )}
@@ -167,7 +170,6 @@ const InvoiceModal = ({
                   </View>
                 )}
 
-                {/* Buttons */}
                 <View style={styles.buttonContainer}>
                   <Button
                     mode="outlined"
@@ -184,9 +186,8 @@ const InvoiceModal = ({
                 </View>
                 <Button
                   mode="contained"
-                  // style={styles.button}
                   onPress={() => {
-                    navigation.navigate('Home'); // Navigate to the Home screen
+                    navigation.navigate('Home');
                   }}>
                   Back to Home
                 </Button>
@@ -200,17 +201,18 @@ const InvoiceModal = ({
 };
 
 const styles = StyleSheet.create({
+  contentWrapper: {
+    maxHeight: 750,
+  },
   modalContainer: {
     backgroundColor: 'white',
     padding: 20,
-    // margin: 20,
     borderRadius: 10,
   },
   invoiceContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    // marginBottom: 20,
   },
   invoiceLeft: {
     flex: 1,
@@ -245,6 +247,11 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontSize: 16,
     color: 'gray',
+  },
+  closeIcon: {
+    alignSelf: 'flex-end',
+    marginLeft: 10,
+    marginBottom: 5,
   },
   table: {
     marginVertical: 20,
@@ -304,10 +311,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginVertical: 10,
   },
+  footerCopy: {
+    textAlign: 'center',
+  },
   contactFooter: {
     marginVertical: 20,
     padding: 10,
-    // backgroundColor: '#f4f4f4',
     borderRadius: 5,
   },
   contactInfo: {

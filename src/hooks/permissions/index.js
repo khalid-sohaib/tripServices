@@ -1,14 +1,26 @@
 import {useState, useEffect} from 'react';
-import {PermissionsAndroid, Platform, Alert} from 'react-native';
+import {PermissionsAndroid, Platform} from 'react-native';
+import {COMPANY_INFO} from '../../config/company';
 
 const usePermissions = () => {
   const [hasStoragePermission, setHasStoragePermission] = useState(false);
 
   const checkStoragePermission = async () => {
     if (Platform.OS === 'android') {
-      const granted = await PermissionsAndroid.check(
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-      );
+      const sdkVersionRaw = Platform.Version ?? 0;
+      const sdkVersion =
+        typeof sdkVersionRaw === 'string'
+          ? parseInt(sdkVersionRaw, 10)
+          : sdkVersionRaw;
+      if (sdkVersion >= 33) {
+        setHasStoragePermission(true);
+        return true;
+      }
+      const permission =
+        sdkVersion >= 30
+          ? PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
+          : PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
+      const granted = await PermissionsAndroid.check(permission);
       setHasStoragePermission(granted);
       return granted;
     }
@@ -18,17 +30,26 @@ const usePermissions = () => {
   const requestStoragePermission = async () => {
     if (Platform.OS === 'android') {
       try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          {
-            title: 'Storage Permission',
-            message:
-              'This app needs access to your storage to save/share files.',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          },
-        );
+        const sdkVersionRaw = Platform.Version ?? 0;
+        const sdkVersion =
+          typeof sdkVersionRaw === 'string'
+            ? parseInt(sdkVersionRaw, 10)
+            : sdkVersionRaw;
+        if (sdkVersion >= 33) {
+          setHasStoragePermission(true);
+          return true;
+        }
+        const permission =
+          sdkVersion >= 30
+            ? PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
+            : PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
+        const granted = await PermissionsAndroid.request(permission, {
+          title: 'Storage Permission',
+          message: `${COMPANY_INFO.name} needs access to storage to export and share invoices.`,
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        });
         setHasStoragePermission(granted === PermissionsAndroid.RESULTS.GRANTED);
         return granted === PermissionsAndroid.RESULTS.GRANTED;
       } catch (err) {

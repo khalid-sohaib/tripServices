@@ -1,79 +1,122 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Trip Electric Services - Invoice Generator
 
-# Getting Started
+A React Native mobile application for generating, printing, and sharing professional PDF invoices.
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+## Features
 
-## Step 1: Start the Metro Server
+- Create detailed invoices with multiple line items
+- Generate professional PDF documents
+- Print invoices directly from the app
+- Share invoices via system share dialog
+- Customizable invoice options (company details, banking info, special instructions)
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+## Getting Started
 
-To start Metro, run the following command from the _root_ of your React Native project:
+### Prerequisites
+
+Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions.
+
+### Installation
 
 ```bash
-# using npm
+npm install
+```
+
+### Running the App
+
+```bash
+# Start Metro bundler
 npm start
 
-# OR using Yarn
-yarn start
-```
-
-## Step 2: Start your Application
-
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
-
-### For Android
-
-```bash
-# using npm
+# Run on Android
 npm run android
 
-# OR using Yarn
-yarn android
+# Run on iOS
+npm run ios
 ```
 
-### For iOS
+### Testing
 
 ```bash
-# using npm
-npm run ios
+# Run all tests
+npm test
 
-# OR using Yarn
-yarn ios
+# Run specific test
+npm test -- __tests__/invoiceUtils.test.js
 ```
 
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
+## Project Structure
 
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
+```
+src/
+├── components/       # UI components
+│   └── invoices/    # Invoice-specific components
+├── screens/         # Screen containers
+├── services/        # Business logic
+│   └── invoices/   # Invoice calculations, PDF generation
+├── config/          # App configuration
+├── hooks/           # Custom React hooks
+└── theme/           # Styling and assets
+```
 
-## Step 3: Modifying your App
+## Key Files
 
-Now that you have successfully run the app, let's modify it.
+- **Company Details**: `src/config/company.js`
+- **Invoice Logic**: `src/services/invoices/`
+- **Form Validation**: `src/components/invoices/InvoiceForm/validationSchema.js`
+- **PDF Template**: `src/services/invoices/template.js`
 
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
+## Common Tasks
 
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
+### Update Company Information
 
-## Congratulations! :tada:
+Edit `src/config/company.js`:
+```javascript
+export const COMPANY_INFO = {
+  name: 'Your Company Name',
+  registrationNumber: '12345678',
+  contact: { email, phone, website },
+  banking: { sortCode, accountNumber },
+};
+```
 
-You've successfully run and modified your React Native App. :partying_face:
+### Modify Invoice Calculations
 
-### Now what?
+Edit `src/services/invoices/utils.js` for calculation logic.
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
+### Customize Invoice Design
 
-# Troubleshooting
+Edit `src/services/invoices/template.js` for HTML/CSS changes.
 
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+## Tech Stack
 
-# Learn More
+- React Native 0.75.3
+- React Navigation
+- React Native Paper (UI)
+- Formik + Yup (Forms & Validation)
+- react-native-html-to-pdf (PDF Generation)
+- react-native-share (Sharing)
 
-To learn more about React Native, take a look at the following resources:
+## Troubleshooting
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+### Build Issues
+
+```bash
+# Clean Android build
+cd android && ./gradlew clean && cd ..
+
+# Clean iOS build
+cd ios && pod install && cd ..
+```
+
+### Permission Issues (Android)
+
+The app handles storage permissions automatically based on Android API level.
+
+## License
+
+Private - Trip Electric Services LTD
+
+## Version
+
+0.0.1

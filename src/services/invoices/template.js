@@ -1,7 +1,10 @@
+import {COMPANY_INFO} from '../../config/company';
 import {companyLogoBase64} from './companyLogoBase64';
+
 export const generateInvoiceHtml = async (values, date) => {
   const {
     billTo,
+    invoiceNo,
     customerAddress,
     discount,
     vat,
@@ -12,22 +15,17 @@ export const generateInvoiceHtml = async (values, date) => {
     email,
     phone,
     specialInstructions,
+    specialInstructionsText,
+    website,
+    note,
   } = values;
 
-  console.log('template:   --- ', values);
-  const invoiceNo = generateInvoiceNumber();
-  const bankAccountNumber = '35390018';
-  const companyEmail = 'tripservices@hotmail.com';
-  const companyPhone = '+447529910522';
-  const companysName = 'TRIP SERVICES LTD';
-  const companyTagline = '24/7 Emergency Electrician Services';
-  const bankSortCode = '60-06-14';
+  const companyPhone = COMPANY_INFO.contact.phone;
+  const companyEmail = COMPANY_INFO.contact.email;
+  const companyWebsite = COMPANY_INFO.contact.website;
+  const bankSortCode = COMPANY_INFO.banking.sortCode;
+  const bankAccountNumber = COMPANY_INFO.banking.accountNumber;
 
-  function generateInvoiceNumber() {
-    return Math.floor(100000 + Math.random() * 900000);
-  }
-
-  // Calculate subtotal for all tasks with precision
   const subTotal = tasks
     .reduce((sum, task) => {
       const taskQuantity = parseFloat(task.quantity) || 0;
@@ -36,7 +34,6 @@ export const generateInvoiceHtml = async (values, date) => {
     }, 0)
     .toFixed(2);
 
-  // Calculate total with precision
   const total = (
     parseFloat(subTotal) -
     Math.abs(parseFloat(discount) || 0) +
@@ -44,7 +41,6 @@ export const generateInvoiceHtml = async (values, date) => {
     (parseFloat(other) || 0)
   ).toFixed(2);
 
-  // Build HTML for each task
   const taskRows = tasks
     .map(task => {
       const taskQuantity = parseFloat(task.quantity) || 0;
@@ -54,8 +50,8 @@ export const generateInvoiceHtml = async (values, date) => {
       <tr class="tableRow">
         <td class="tableCell">${task.description || ''}</td>
         <td class="tableCell">${taskQuantity}</td>
-        <td class="tableCell">${taskUnitPrice.toFixed(2)}</td>
-        <td class="tableCell">${taskSubTotal}</td>
+        <td class="tableCell">£${taskUnitPrice.toFixed(2)}</td>
+        <td class="tableCell">£${taskSubTotal}</td>
       </tr>
     `;
     })
@@ -71,17 +67,16 @@ export const generateInvoiceHtml = async (values, date) => {
       body {
         font-family: Arial, sans-serif;
         margin: 0;
-        padding: 0;
+        padding: 20px 60px;
         line-height: 1;
         font-size: 14px;
         display: flex;
         flex-direction: column;
-        min-height: 100vh;
+        min-height: 95vh;
       }
       .container {
         padding: 0 10px;
         flex: 1;
-        padding-bottom: 50px; 
       }
       .header {
         display: flex;
@@ -89,11 +84,11 @@ export const generateInvoiceHtml = async (values, date) => {
         align-items: flex-start;
       }
       .header img {
-        width: 120px;
+        width: 100px;
       }
       h1 {
         margin: 0;
-        font-size: 48px;
+        font-size: 52px;
         font-weight: bold;
         color: #00488f;
         margin-bottom:20px;
@@ -119,11 +114,6 @@ export const generateInvoiceHtml = async (values, date) => {
         border-collapse: collapse;
         margin-top: 20px;
       }
-
-      .detailsContainer {
-        margin-left: 60px;
-        margin-right: 60px;
-      }
       table,
       th,
       td {
@@ -142,10 +132,6 @@ export const generateInvoiceHtml = async (values, date) => {
       tfoot tr td:first-child {
         border: none;
       }
-      .totals {
-        text-align: right;
-        margin-top: 20px;
-      }
       .special-instructions {
         margin-top: 20px;
         font-size: 14px;
@@ -160,7 +146,12 @@ export const generateInvoiceHtml = async (values, date) => {
         text-align: left;
         font-size: 14px;
         line-height:0
-
+      }
+      .note {
+        margin-top: 30px; 
+        text-align: left;
+        font-size: 14px;
+        line-height:0;
       }
       .footer {
         width: 100%;
@@ -180,12 +171,24 @@ export const generateInvoiceHtml = async (values, date) => {
         display: flex;
         flex-direction: row;
         justify-content: space-between; 
-        align-items: center; 
+        align-items: left; 
         margin-bottom: 5px;
       }
-      
-      .row p {
-        margin: 0; /* Remove default margins for better alignment */
+      .row p:first-child {
+        margin: 0;
+        min-width: 100px;
+      }
+      .row p:last-child {
+        margin: 0;
+        flex-grow: 1;
+        text-align: left;
+        max-width: 200px
+      }
+      .right-align {
+        text-align: right;
+      }
+      .left-align {
+        text-align: left;
       }
     </style>
   </head>
@@ -226,32 +229,37 @@ export const generateInvoiceHtml = async (values, date) => {
           companyName
             ? `
             <div class="company-logo">
-            <img src="${companyLogoBase64}" alt="Company Logo" />
-            <h3 style="color:#fa9626">${companyTagline}</h3>
+              <img src="${companyLogoBase64}" alt="Company Logo" />
+              <h3 style="color:#fa9626">${COMPANY_INFO.tagline}</h3>
             </div>
             `
             : ''
         }
-
-        ${
-          phone
-            ? `
-        <p>Phone: ${companyPhone}</p>
-        `
-            : ''
-        }
-        ${
-          email
-            ? `
-        <p>Email: ${companyEmail}</p>
-        `
-            : ''
-        }
+          <div class="left-align">
+            ${
+              phone
+                ? `
+                <p>Phone: ${companyPhone}</p>
+                `
+                : ''
+            }
+            ${
+              email
+                ? `
+                <p>Email: ${companyEmail}</p>
+                `
+                : ''
+            }
+            ${
+              website
+                ? `
+                <p>Web:<a href="${companyWebsite}">${companyWebsite}</a></p>
+                `
+                : ''
+            }
+          </div>
         </div>
       </div>
-
-     
-      <div class="detailsContainer">
         <!-- Table Section -->
           <table>
             <thead>
@@ -268,15 +276,15 @@ export const generateInvoiceHtml = async (values, date) => {
             <tfoot>
               <tr>
                 <td colspan="3" style="text-align: right">Sub Total</td>
-                <td>${subTotal}</td>
+                <td>£${subTotal}</td>
               </tr>
               <tr>
                 <td colspan="3" style="text-align: right">VAT</td>
-                <td>${parseFloat(vat).toFixed(2)}</td>
+                <td>£${parseFloat(vat).toFixed(2)}</td>
               </tr>
               <tr>
                 <td colspan="3" style="text-align: right"><strong>Total</strong></td>
-                <td><strong>${total}</strong></td>
+                <td><strong>£${total}</strong></td>
               </tr>
             </tfoot>
           </table>
@@ -286,48 +294,63 @@ export const generateInvoiceHtml = async (values, date) => {
         ${
           specialInstructions
             ? `
-          <p style="margin-bottom: 30px">Special Instruction</p>
-          <div class="line"></div>
-          <div class="line"></div>
-          `
+            <p style="margin-bottom: 10px">Special Instruction</p>
+            <p style="margin-bottom: 30px">${specialInstructionsText}</p>
+            `
             : ''
         }
         </div>
 
-        <!-- Payment Info -->
-        <div class="payment-instructions">
-          ${
-            companyName
-              ? `
-              <p>Make all payments to <strong>${companysName}</strong></p>
-              `
-              : ''
-          }
-          ${
-            bankAccount
-              ? `
-          <p>Sort Code: <strong>${bankSortCode}</strong> Account Number: <strong>${bankAccountNumber}</strong></p>
-          `
-              : ''
-          }
-          ${
-            email
-              ? `
-          <p>
-            If you have any questions concerning this invoice, contact
-            <strong>${companyEmail}</strong>
-          </p>
-          `
-              : ''
-          }
-        </div>
+          <!-- Payment Info -->
+          <div class="payment-instructions">
+            ${
+              companyName
+                ? `
+                <p>Make all payments to <strong>${COMPANY_INFO.name}</strong></p>
+                `
+                : ''
+            }
+            ${
+              bankAccount
+                ? `
+                <p style="max-width: 200px flex-grow: 1">Sort Code: <strong>${bankSortCode}</strong> Account Number: <strong>${bankAccountNumber}</strong></p>
+                `
+                : ''
+            }
+            ${
+              email
+                ? `
+                <p style="max-width: 100px flex-grow: 1">
+                  If you have any questions concerning this invoice, 
+                  contact <strong>${companyEmail}</strong>
+                </p>
+                `
+                : ''
+            }
+          </div>
+
+          <div>
+            ${
+              note
+                ? `
+                <p>
+                  Please get a EICR as soon as possible by a qualified electrician.
+                </p>
+                `
+                : ''
+            }
+          </div>
         </div>
 
-      </div>
       <!-- Footer -->
       <div class="footer">
         <p><strong>Thank You</strong></p>
         <p>We appreciate your business</p>
+        ${
+          companyName
+            ? `<p>${COMPANY_INFO.name} - Company Number : ${COMPANY_INFO.registrationNumber}</p>`
+            : ''
+        }
       </div>
   </body>
 </html>

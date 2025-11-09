@@ -1,6 +1,6 @@
 import {StyleSheet, Text, View} from 'react-native';
 import React from 'react';
-import InvoiceForm from '../../componenets/invoiceForm';
+import InvoiceForm from '../../components/invoices/InvoiceForm';
 
 export default function InvoiceScreen() {
   return (
