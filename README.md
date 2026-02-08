@@ -88,6 +88,30 @@ Edit `src/services/invoices/utils.js` for calculation logic.
 
 Edit `src/services/invoices/template.js` for HTML/CSS changes.
 
+### Update the app logo
+
+The app logo is used in three places: **home screen**, **app icon (launcher)**, and **invoice PDFs**.
+
+1. **Replace the logo image**  
+   Save your logo (PNG or JPEG, 1024×1024 or larger recommended) as:
+   ```
+   src/theme/assets/TripServicesLogo.jpeg
+   ```
+
+2. **Regenerate app icons (Android + iOS)**  
+   This updates the launcher icon on devices and in the app store assets:
+   ```bash
+   npm run generate-icons
+   ```
+
+3. **Update the invoice PDF logo**  
+   This updates the company logo shown on generated invoices:
+   ```bash
+   npm run update-invoice-logo
+   ```
+
+The home screen uses the same file and scales it responsively; no extra step needed.
+
 ## Tech Stack
 
 - React Native 0.75.3

@@ -156,14 +156,14 @@ const InvoiceModal = ({
                     <View style={styles.contactInfo}>
                       {email && (
                         <View style={styles.contactFooterText}>
-                          <Text>{COMPANY_INFO.email}</Text>
                           <Icon name="email" style={styles.footerIcon} />
+                          <Text>{COMPANY_INFO.contact.email}</Text>
                         </View>
                       )}
                       {phone && (
                         <View style={styles.contactFooterText}>
-                          <Text>{COMPANY_INFO.phone}</Text>
                           <Icon name="phone" style={styles.footerIcon} />
+                          <Text>{COMPANY_INFO.contact.phone}</Text>
                         </View>
                       )}
                     </View>
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   paymentInfo: {
-    marginVertical: 20,
+    marginVertical: 10,
     padding: 10,
     backgroundColor: '#f9f9f9',
     borderRadius: 5,
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   footerIcon: {
-    marginLeft: 10,
+    marginRight: 8,
     fontSize: 14,
     color: 'gray',
   },

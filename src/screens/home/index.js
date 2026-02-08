@@ -2,7 +2,7 @@ import React from 'react';
 import {ImageBackground, SafeAreaView, StyleSheet, View} from 'react-native';
 import {Button, Icon} from 'react-native-paper';
 import {useNavigation} from '@react-navigation/native';
-import Logo from '../../theme/assets/TE1-02.png';
+import Logo from '../../theme/assets/TripServicesLogo.jpeg';
 import BgImage from '../../theme/assets/bgImage.jpg';
 import {colors} from '../../theme/colors';
 
